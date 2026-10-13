@@ -4,25 +4,36 @@
 [![Expo SDK](https://img.shields.io/badge/Expo%20SDK-57-black.svg)](https://docs.expo.dev)
 [![React Native](https://img.shields.io/badge/React%20Native-0.86-61DAFB.svg)](https://reactnative.dev)
 [![Firebase](https://img.shields.io/badge/Firebase%20Auth-v13-FFCA28.svg)](https://firebase.google.com)
-[![Netlify](https://img.shields.io/badge/Deploy-Netlify-00C7B7.svg)](https://www.netlify.com)
+[![Netlify Status](https://img.shields.io/badge/Netlify-Live%20Demo-00C7B7.svg)](https://spectacular-naiad-6941fa.netlify.app)
+
+> 🚀 **Live Production Deployment**: [https://spectacular-naiad-6941fa.netlify.app](https://spectacular-naiad-6941fa.netlify.app)  
+> 🔗 **GitHub Repository**: [https://github.com/AmiteshKumarDubey/hbplus-auth-app](https://github.com/AmiteshKumarDubey/hbplus-auth-app)
 
 A production-ready cross-platform authentication application built with **React Native**, **Expo**, **React Native for Web**, and **Firebase Authentication**. Features enterprise-grade Google OAuth with strict corporate domain restriction (`@hbplus.fit`), role-based access control (`Admin` vs `User`), and protected navigation routing.
 
 ---
 
 ## 📑 Table of Contents
-1. [Key Features](#-key-features)
-2. [Tech Stack](#-tech-stack)
-3. [Folder Structure](#-folder-structure)
-4. [Firebase Configuration](#-firebase-configuration)
-5. [Authentication Flow](#-authentication-flow)
-6. [Domain Restriction Validation Logic](#-domain-restriction-validation-logic)
-7. [Getting Started & Local Setup](#-getting-started--local-setup)
-8. [Available Scripts](#-available-scripts)
-9. [Deployment Guide (Netlify)](#-deployment-guide-netlify)
-10. [Security & Production Hardening](#-security--production-hardening)
+1. [Live Deployment & Submission](#-live-deployment--submission)
+2. [Key Features](#-key-features)
+3. [Tech Stack](#-tech-stack)
+4. [Folder Structure](#-folder-structure)
+5. [Firebase Configuration](#-firebase-configuration)
+6. [Authentication Flow](#-authentication-flow)
+7. [Domain Restriction Validation Logic](#-domain-restriction-validation-logic)
+8. [Evaluator & Testing Guide](#-evaluator--testing-guide)
+9. [Getting Started & Local Setup](#-getting-started--local-setup)
+10. [Available Scripts](#-available-scripts)
+11. [Deployment Guide (Netlify)](#-deployment-guide-netlify)
+12. [Security & Production Hardening](#-security--production-hardening)
 
 ---
+
+## 🌐 Live Deployment & Submission
+
+- **Live URL**: [https://spectacular-naiad-6941fa.netlify.app](https://spectacular-naiad-6941fa.netlify.app)
+- **Demo Review Mode**: [https://spectacular-naiad-6941fa.netlify.app?demo=true](https://spectacular-naiad-6941fa.netlify.app?demo=true)
+- **Repository**: [https://github.com/AmiteshKumarDubey/hbplus-auth-app](https://github.com/AmiteshKumarDubey/hbplus-auth-app)
 
 ## 🚀 Key Features
 
@@ -253,7 +264,7 @@ export const RESTRICTED_ERROR_MESSAGE =
 ### 1. Installation
 Clone the repository and install project dependencies:
 ```bash
-git clone https://github.com/your-username/hbplus-auth-app.git
+git clone https://github.com/AmiteshKumarDubey/hbplus-auth-app.git
 cd hbplus-auth-app
 npm install
 ```
