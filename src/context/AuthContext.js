@@ -3,7 +3,6 @@ import {
   signInWithGoogle,
   signOutUser,
   subscribeToAuthState,
-  simulateDomainSignIn,
 } from "../services/authService";
 import { RESTRICTED_ERROR_MESSAGE } from "../config/constants";
 
@@ -14,7 +13,6 @@ const AuthContext = createContext({
   authActionLoading: false,
   error: null,
   loginWithGoogle: async () => {},
-  loginWithSimulation: async () => {},
   logout: async () => {},
   clearError: () => {},
 });
@@ -60,29 +58,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Triggers simulated sign-in for testing allowed vs restricted accounts.
-   */
-  const handleSimulationLogin = async (email, name) => {
-    try {
-      setError(null);
-      setAuthActionLoading(true);
-      const { user: authedUser, role: authedRole } = await simulateDomainSignIn(
-        email,
-        name
-      );
-      setUser(authedUser);
-      setRole(authedRole);
-      return { success: true, user: authedUser };
-    } catch (err) {
-      const message = err.message || RESTRICTED_ERROR_MESSAGE;
-      setError(message);
-      return { success: false, error: message };
-    } finally {
-      setAuthActionLoading(false);
-    }
-  };
-
-  /**
    * Logs out the user and clears state.
    */
   const handleLogout = async () => {
@@ -94,7 +69,6 @@ export const AuthProvider = ({ children }) => {
       setError(null);
     } catch (err) {
       console.error("Logout error:", err);
-      // Ensure local state is cleared even if network sign-out encounters issues
       setUser(null);
       setRole("User");
     } finally {
@@ -111,7 +85,6 @@ export const AuthProvider = ({ children }) => {
         authActionLoading,
         error,
         loginWithGoogle: handleGoogleLogin,
-        loginWithSimulation: handleSimulationLogin,
         logout: handleLogout,
         clearError,
       }}

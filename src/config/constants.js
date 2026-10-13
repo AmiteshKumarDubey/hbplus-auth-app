@@ -20,36 +20,6 @@ export const APP_CONFIG = {
 };
 
 /**
- * Developer & Evaluator Demo Scenarios Control
- * 
- * Options:
- * - 'dev-only': Visible on localhost (__DEV__), hidden on production (unless ?demo=true in URL)
- * - 'disabled': Completely disabled in all environments (strict pure OAuth)
- * - 'always': Always visible
- */
-export const DEMO_TOOLS_MODE = "dev-only";
-
-export const isDemoToolsEnabled = () => {
-  if (DEMO_TOOLS_MODE === "disabled") return false;
-  if (DEMO_TOOLS_MODE === "always") return true;
-
-  // Check if in local development mode
-  if (typeof __DEV__ !== "undefined" && __DEV__) return true;
-
-  // Check if explicitly activated in query params for evaluator inspection
-  if (
-    typeof window !== "undefined" &&
-    window.location &&
-    typeof window.location.search === "string" &&
-    window.location.search.includes("demo=true")
-  ) {
-    return true;
-  }
-
-  return false;
-};
-
-/**
  * Validates whether an email belongs to the allowed corporate domain.
  * @param {string} email
  * @returns {boolean}

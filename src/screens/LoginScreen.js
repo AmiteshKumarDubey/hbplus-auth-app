@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   Platform,
   SafeAreaView,
   KeyboardAvoidingView,
@@ -15,28 +14,19 @@ import { GoogleButton } from "../components/GoogleButton";
 import { AlertBanner } from "../components/AlertBanner";
 import { GlassCard } from "../components/GlassCard";
 import { colors } from "../theme/colors";
-import { APP_CONFIG, ALLOWED_DOMAIN, isDemoToolsEnabled } from "../config/constants";
+import { APP_CONFIG, ALLOWED_DOMAIN } from "../config/constants";
 
 export const LoginScreen = () => {
   const {
     loginWithGoogle,
-    loginWithSimulation,
     authActionLoading,
     error,
     clearError,
   } = useAuth();
 
-  const [showDevTools, setShowDevTools] = useState(false);
-  const isDemoAvailable = isDemoToolsEnabled();
-
   const handleGoogleSignIn = async () => {
     clearError();
     await loginWithGoogle();
-  };
-
-  const handleSimulatedSignIn = async (email, name) => {
-    clearError();
-    await loginWithSimulation(email, name);
   };
 
   return (
@@ -122,99 +112,6 @@ export const LoginScreen = () => {
                   automatically rejected and signed out immediately.
                 </Text>
               </View>
-
-              {/* Developer / Demonstration Testing Drawer (Visible on localhost dev, hidden in production unless ?demo=true) */}
-              {isDemoAvailable && (
-                <View style={styles.devDrawerSection}>
-                  <TouchableOpacity
-                    onPress={() => setShowDevTools(!showDevTools)}
-                    style={styles.devToggle}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons
-                      name={showDevTools ? "chevron-up" : "chevron-down"}
-                      size={14}
-                      color={colors.textMuted}
-                      style={{ marginRight: 6 }}
-                    />
-                    <Text style={styles.devToggleText}>
-                      {showDevTools ? "Hide Quick-Test Scenarios" : "Quick-Test Scenarios (Allowed & Restricted)"}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {showDevTools && (
-                    <View style={styles.devBox}>
-                      <Text style={styles.devBoxHeading}>
-                        Validate Domain Restriction Engine:
-                      </Text>
-                      <View style={styles.devButtonsGrid}>
-                        <TouchableOpacity
-                          style={[styles.devButton, styles.devButtonSuccess]}
-                          onPress={() =>
-                            handleSimulatedSignIn(
-                              "alex.morgan@hbplus.fit",
-                              "Alex Morgan"
-                            )
-                          }
-                          disabled={authActionLoading}
-                        >
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={14}
-                            color={colors.accentEmerald}
-                            style={{ marginRight: 6 }}
-                          />
-                          <Text style={styles.devButtonText}>
-                            Allowed User (@hbplus.fit)
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={[styles.devButton, styles.devButtonAdmin]}
-                          onPress={() =>
-                            handleSimulatedSignIn(
-                              "admin@hbplus.fit",
-                              "Sarah Chen (Admin)"
-                            )
-                          }
-                          disabled={authActionLoading}
-                        >
-                          <Ionicons
-                            name="shield"
-                            size={14}
-                            color={colors.roleAdminText}
-                            style={{ marginRight: 6 }}
-                          />
-                          <Text style={styles.devButtonText}>
-                            Allowed Admin (@hbplus.fit)
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={[styles.devButton, styles.devButtonFail]}
-                          onPress={() =>
-                            handleSimulatedSignIn(
-                              "external.user@gmail.com",
-                              "External User"
-                            )
-                          }
-                          disabled={authActionLoading}
-                        >
-                          <Ionicons
-                            name="close-circle"
-                            size={14}
-                            color={colors.error}
-                            style={{ marginRight: 6 }}
-                          />
-                          <Text style={styles.devButtonText}>
-                            Restricted (@gmail.com)
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-                </View>
-              )}
             </GlassCard>
 
             {/* Footer */}
@@ -382,72 +279,6 @@ const styles = StyleSheet.create({
   },
   boldText: {
     color: colors.textPrimary,
-    fontWeight: "600",
-  },
-  devDrawerSection: {
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderSubtle,
-    paddingTop: 16,
-  },
-  devToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 4,
-  },
-  devToggleText: {
-    color: colors.textMuted,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  devBox: {
-    backgroundColor: "rgba(15, 23, 42, 0.75)",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.06)",
-    padding: 12,
-    marginTop: 12,
-  },
-  devBoxHeading: {
-    color: colors.textSecondary,
-    fontSize: 11,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 10,
-  },
-  devButtonsGrid: {
-    gap: 8,
-  },
-  devButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    ...Platform.select({
-      web: {
-        cursor: "pointer",
-      },
-    }),
-  },
-  devButtonSuccess: {
-    backgroundColor: "rgba(16, 185, 129, 0.08)",
-    borderColor: "rgba(16, 185, 129, 0.3)",
-  },
-  devButtonAdmin: {
-    backgroundColor: "rgba(139, 92, 246, 0.08)",
-    borderColor: "rgba(139, 92, 246, 0.3)",
-  },
-  devButtonFail: {
-    backgroundColor: "rgba(239, 68, 68, 0.08)",
-    borderColor: "rgba(239, 68, 68, 0.3)",
-  },
-  devButtonText: {
-    color: colors.textPrimary,
-    fontSize: 12,
     fontWeight: "600",
   },
   footer: {

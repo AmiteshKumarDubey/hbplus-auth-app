@@ -9,7 +9,7 @@
 > 🚀 **Live Production Deployment**: [https://spectacular-naiad-6941fa.netlify.app](https://spectacular-naiad-6941fa.netlify.app)  
 > 🔗 **GitHub Repository**: [https://github.com/AmiteshKumarDubey/hbplus-auth-app](https://github.com/AmiteshKumarDubey/hbplus-auth-app)
 
-A production-ready cross-platform authentication application built with **React Native**, **Expo**, **React Native for Web**, and **Firebase Authentication**. Features enterprise-grade Google OAuth with strict corporate domain restriction (`@hbplus.fit`), role-based access control (`Admin` vs `User`), and protected navigation routing.
+A complete, production-ready cross-platform authentication application built with **React Native**, **Expo**, **React Native for Web**, and **Firebase Authentication**. Features enterprise-grade Google OAuth with strict corporate domain restriction (`@hbplus.fit`), role-based access control (`Admin` vs `User`), and protected navigation routing.
 
 ---
 
@@ -21,19 +21,19 @@ A production-ready cross-platform authentication application built with **React 
 5. [Firebase Configuration](#-firebase-configuration)
 6. [Authentication Flow](#-authentication-flow)
 7. [Domain Restriction Validation Logic](#-domain-restriction-validation-logic)
-8. [Evaluator & Testing Guide](#-evaluator--testing-guide)
-9. [Getting Started & Local Setup](#-getting-started--local-setup)
-10. [Available Scripts](#-available-scripts)
-11. [Deployment Guide (Netlify)](#-deployment-guide-netlify)
-12. [Security & Production Hardening](#-security--production-hardening)
+8. [Getting Started & Local Setup](#-getting-started--local-setup)
+9. [Available Scripts](#-available-scripts)
+10. [Deployment Guide (Netlify)](#-deployment-guide-netlify)
+11. [Security & Production Hardening](#-security--production-hardening)
 
 ---
 
 ## 🌐 Live Deployment & Submission
 
 - **Live URL**: [https://spectacular-naiad-6941fa.netlify.app](https://spectacular-naiad-6941fa.netlify.app)
-- **Demo Review Mode**: [https://spectacular-naiad-6941fa.netlify.app?demo=true](https://spectacular-naiad-6941fa.netlify.app?demo=true)
 - **Repository**: [https://github.com/AmiteshKumarDubey/hbplus-auth-app](https://github.com/AmiteshKumarDubey/hbplus-auth-app)
+
+---
 
 ## 🚀 Key Features
 
@@ -41,8 +41,8 @@ A production-ready cross-platform authentication application built with **React 
 - **Enterprise Domain Restriction**: Automated gatekeeper enforcing that only Google accounts ending in `@hbplus.fit` gain access. Disallowed accounts (e.g. `@gmail.com`) are immediately evicted and signed out.
 - **Protected Routes**: Navigation hierarchy governed by `@react-navigation/native-stack`. Unauthenticated requests cannot access internal screens, and logouts cleanly wipe session state.
 - **Role-Based Access Control (RBAC)**: Dynamically assigns and renders visual role badges (`Admin` vs `User`) along with role-tailored dashboard control panels.
+- **Database Persistence**: Synchronizes authenticated corporate member profiles to Cloud Firestore database (`users` collection).
 - **Premium Glassmorphic UI**: High-contrast, dark-mode corporate theme with ambient lighting, frosted glass cards, custom vector icons, and fluid responsive layouts.
-- **Testing Suite**: Built-in interactive validation panel enabling reviewers to immediately test authorized, admin, and restricted domain outcomes without needing external domain registration.
 
 ---
 
@@ -53,7 +53,7 @@ A production-ready cross-platform authentication application built with **React 
 | **Framework** | Expo (SDK 57) | `~57.0.28` |
 | **Core UI** | React Native / React Native for Web | `0.86.3` / `0.21.2` |
 | **Web Runtime** | React 19 / React DOM | `19.2.3` |
-| **Authentication** | Firebase JavaScript SDK (Auth, App, Analytics) | `^13.0.0` |
+| **Authentication** | Firebase JavaScript SDK (Auth, App, Analytics, Firestore) | `^13.0.0` |
 | **Navigation** | React Navigation Native & Native-Stack | `^7.5.0` |
 | **State Persistence**| React Native Async Storage | `2.2.0` |
 | **Icons & Design** | Expo Vector Icons (`Ionicons`) | `^15.0.2` |
@@ -74,7 +74,7 @@ hbplus-auth-app/
 │   │   └── RoleBadge.js          # Dynamic Admin / User role badge
 │   ├── config/                   # Centralized configuration & constants
 │   │   ├── constants.js          # ALLOWED_DOMAIN, error messages, app metadata
-│   │   └── firebase.js           # Firebase app initialization & auth exports
+│   │   └── firebase.js           # Firebase app initialization, Firestore & auth exports
 │   ├── context/                  # Application state & context providers
 │   │   └── AuthContext.js        # React Context managing session, user & roles
 │   ├── navigation/               # Routing & protected screen transitions
@@ -83,7 +83,7 @@ hbplus-auth-app/
 │   │   ├── DashboardScreen.js    # Protected dashboard with profile & controls
 │   │   └── LoginScreen.js        # Corporate login interface & error alerts
 │   ├── services/                 # Business logic & API abstraction
-│   │   └── authService.js        # Google OAuth & domain verification engine
+│   │   └── authService.js        # Google OAuth, domain verification engine & Firestore sync
 │   └── theme/                    # Design tokens & color system
 │       └── colors.js             # Curated dark-mode theme colors
 ├── App.js                        # Application root entry point
@@ -98,12 +98,13 @@ hbplus-auth-app/
 
 ## 🔥 Firebase Configuration
 
-The application is connected to the HB+ Firebase project in [`src/config/firebase.js`](file:///Users/amiteshkumardubey/Desktop/HB/hbplus-auth-app/src/config/firebase.js):
+The application is connected to the HB+ Firebase project in [`src/config/firebase.js`](src/config/firebase.js):
 
 ```javascript
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { initializeAuth, getAuth, getReactNativePersistence, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
@@ -140,10 +141,16 @@ if (Platform.OS === "web") {
   }
 }
 
+// Firestore Database for User Data Storage
+let db = null;
+try {
+  db = getFirestore(app);
+} catch (e) {}
+
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
-export { app, analytics, auth, googleProvider, firebaseConfig };
+export { app, analytics, auth, db, googleProvider, firebaseConfig };
 ```
 
 ---
@@ -182,19 +189,22 @@ export { app, analytics, auth, googleProvider, firebaseConfig };
              |                                 |
              v                                 v
    +--------------------+            +--------------------+
-   | Mount Protected    |            | Display Alert:     |
-   | Dashboard Screen   |            | "Access restricted.|
+   | Sync to Firestore  |            | Display Alert:     |
+   | (users collection) |            | "Access restricted.|
    +--------------------+            |  Please login using|
-                                     |  your official     |
-                                     |  domain email."    |
-                                     +--------------------+
+             |                       |  your official     |
+             v                       |  domain email."    |
+   +--------------------+            +--------------------+
+   | Mount Protected    |
+   | Dashboard Screen   |
+   +--------------------+
 ```
 
 ---
 
 ## 🛡 Domain Restriction Validation Logic
 
-The corporate domain restriction is configured centrally in [`src/config/constants.js`](file:///Users/amiteshkumardubey/Desktop/HB/hbplus-auth-app/src/config/constants.js):
+The corporate domain restriction is configured centrally in [`src/config/constants.js`](src/config/constants.js):
 
 ```javascript
 // Configurable corporate domain
@@ -225,33 +235,8 @@ export const RESTRICTED_ERROR_MESSAGE =
    If `isAllowedDomain(email)` returns `false`:
    - `signOut(auth)` is triggered immediately on the Firebase instance to invalidate tokens and kill local cache.
    - An `AUTH_DOMAIN_RESTRICTED` error is thrown with `RESTRICTED_ERROR_MESSAGE`.
-   - The user is kept on the Login Screen and the `AlertBanner` highlights the restriction in crimson.
----
-
-## 🧪 Evaluator & Testing Guide
-
-> [!NOTE]
-> **Production vs Development Experience**:
-> - **In Production (Default)**: The Login screen presents a strictly enterprise OAuth interface with NO testing shortcuts. Only Google accounts ending in `@hbplus.fit` are permitted.
-> - **In Local Development (`__DEV__`)**: A collapsible "Quick-Test Scenarios" panel is available to test both allowed and restricted flows without domain registration.
-> - **For Evaluators without an `@hbplus.fit` Google Account**: You can append `?demo=true` to the URL (e.g. `https://your-site.netlify.app?demo=true`) to unlock the testing drawer and inspect the protected Dashboard screen, Admin roles, and error states.
-
-### Testing Scenarios:
-
-1. **Test Domain Restriction with Real Google Account**:
-   - Click **"Sign in with Google"** and authenticate using any non-`@hbplus.fit` Google account (e.g. personal `@gmail.com`).
-   - The security engine detects the unauthorized domain, immediately invalidates the session via `signOut(auth)`, and surfaces the required error banner:
+   - The user is kept on the Login Screen and the `AlertBanner` highlights the restriction in crimson:
      > *"Access restricted. Please login using your official domain email."*
-
-2. **Test Corporate Authorization with Live Account**:
-   - Authenticate with any official `@hbplus.fit` Google Workspace account.
-   - The user is seamlessly routed to the protected **Dashboard** with their real Google name, verified domain badge, and role assignment. User record is synchronized with Cloud Firestore database.
-
-3. **Test Dashboard UI & Roles (Reviewer Mode)**:
-   - Expand **"Quick-Test Scenarios"** (available locally or with `?demo=true`):
-     - Click **"Allowed User (@hbplus.fit)"** to preview the standard employee member dashboard.
-     - Click **"Allowed Admin (@hbplus.fit)"** to preview elevated administrative access and the Admin Control Center panel.
-     - Click **"Restricted (@gmail.com)"** to trigger the instant restriction rejection alert.
 
 ---
 
@@ -299,9 +284,9 @@ Scan the QR code with the **Expo Go** app on your physical mobile device or laun
 
 ## 🌐 Deployment Guide (Netlify)
 
-This project is pre-configured for automated continuous deployment to **Netlify** via [`netlify.toml`](file:///Users/amiteshkumardubey/Desktop/HB/hbplus-auth-app/netlify.toml).
+This project is pre-configured for automated continuous deployment to **Netlify** via [`netlify.toml`](netlify.toml).
 
-### Option A: Deploy via Netlify CLI (Fastest)
+### Option A: Deploy via Netlify CLI
 
 1. **Install Netlify CLI**:
    ```bash
@@ -320,9 +305,9 @@ This project is pre-configured for automated continuous deployment to **Netlify*
 
 ### Option B: Deploy via Netlify Git Integration
 
-1. Push your repository to **GitHub** / **GitLab** / **Bitbucket**.
+1. Push your repository to **GitHub**.
 2. Log in to [Netlify](https://app.netlify.com) and click **"Add new site" > "Import an existing project"**.
-3. Select your repository.
+3. Select your repository (`hbplus-auth-app`).
 4. Netlify will automatically detect the settings from `netlify.toml`:
    - **Base directory**: `/` (leave empty)
    - **Build command**: `npm run build:web`
@@ -333,12 +318,12 @@ This project is pre-configured for automated continuous deployment to **Netlify*
 In order for Google OAuth popups to function on your deployed Netlify domain:
 1. Go to the [Firebase Console](https://console.firebase.google.com).
 2. Navigate to **Authentication** > **Settings** > **Authorized domains**.
-3. Click **Add domain** and enter your Netlify subdomain (e.g., `hbplus-auth-app.netlify.app` or your custom domain).
+3. Click **Add domain** and enter your Netlify subdomain (e.g., `spectacular-naiad-6941fa.netlify.app`).
 
 ---
 
 ## 🔒 Security & Production Hardening
 
 - **No Secret Leaks**: Firebase Web API keys are identifiers intended for public client use; security is enforced via Firebase Auth Domain verification and Google OAuth configuration.
-- **Content Security Headers**: [`netlify.toml`](file:///Users/amiteshkumardubey/Desktop/HB/hbplus-auth-app/netlify.toml) configures `X-Frame-Options: DENY`, `X-XSS-Protection`, and `nosniff` headers to mitigate framing and injection risks.
+- **Content Security Headers**: [`netlify.toml`](netlify.toml) configures `X-Frame-Options: DENY`, `X-XSS-Protection`, and `nosniff` headers to mitigate framing and injection risks.
 - **Fail-Closed Gatekeeping**: If a user's network or state fails during domain validation, the authentication context automatically fails closed, ensuring unverified users are rejected by default.

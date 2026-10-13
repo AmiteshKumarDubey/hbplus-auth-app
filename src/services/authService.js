@@ -21,7 +21,7 @@ import {
 
 /**
  * Stores / updates authorized user record in Cloud Firestore database.
- * (Fulfills the Bonus: Store user data in database)
+ * (Bonus Requirement: Store user data in database)
  *
  * @param {object} user
  * @param {string} role
@@ -43,7 +43,7 @@ export const syncUserToDatabase = async (user, role) => {
       { merge: true }
     );
   } catch (error) {
-    // Graceful logging: auth should never fail if network or database security rules are in strict mode
+    // Graceful logging: auth flow continues even if database rules or network is limited
     console.log("Firestore sync notice:", error?.message || error);
   }
 };
@@ -80,10 +80,8 @@ export const signInWithGoogle = async () => {
       return { user, role };
     } else {
       // Native Mobile Fallback Flow
-      // Note: On native Expo mobile without custom native client ID credentials,
-      // this provides a structured workflow.
       throw new Error(
-        "Native Google Sign-In requires configured Google Services client IDs. Use Web for full OAuth or simulated corporate account."
+        "Native Google Sign-In requires configured Google Services client IDs. Use Web for full OAuth."
       );
     }
   } catch (error) {
@@ -103,44 +101,6 @@ export const signInWithGoogle = async () => {
     }
     throw error;
   }
-};
-
-/**
- * Simulated Corporate & Restricted Sign-In (For Testing & Review)
- * Enables testing both valid @hbplus.fit accounts and restricted domains (@gmail.com)
- * without requiring ownership of an active Google Workspace enterprise domain.
- *
- * @param {string} email
- * @param {string} [displayName]
- * @returns {Promise<{user: object, role: string}>}
- */
-export const simulateDomainSignIn = async (
-  email,
-  displayName = "HB+ Team Member"
-) => {
-  // Simulate network latency
-  await new Promise((resolve) => setTimeout(resolve, 600));
-
-  if (!isAllowedDomain(email)) {
-    const error = new Error(RESTRICTED_ERROR_MESSAGE);
-    error.code = "AUTH_DOMAIN_RESTRICTED";
-    error.email = email;
-    throw error;
-  }
-
-  const role = getUserRole(email);
-  const user = {
-    uid: "simulated-" + Date.now(),
-    email: email,
-    displayName: displayName,
-    photoURL: null,
-    emailVerified: true,
-  };
-
-  // Sync simulated record
-  await syncUserToDatabase(user, role);
-
-  return { user, role };
 };
 
 /**
