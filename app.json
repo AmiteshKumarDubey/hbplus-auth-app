@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "HB Plus Auth",
+    "slug": "hbplus-auth-app",
+    "version": "1.0.0",
+    "scheme": "hbplus-auth-app",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hbplus.authapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F172A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.hbplus.authapp"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-web-browser",
+      "expo-font"
+    ]
+  }
+}
